@@ -55,7 +55,7 @@ public class Scheduler extends Thread {
                 for (TransactionDictionary transactionDictionary : map.values()) {
                     if( transactionDictionary.isFinished() || now > (transactionDictionary.getLastTouchTime() + ageToDiscard) ) {
                         numRemoved++;
-                        map.remove( transactionDictionary.futureTask );
+                        map.remove( transactionDictionary.getKey() );
                     }
                 }
             }
