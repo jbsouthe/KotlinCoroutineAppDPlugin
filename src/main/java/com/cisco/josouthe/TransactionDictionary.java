@@ -7,7 +7,7 @@ import java.util.Date;
 
 public class TransactionDictionary {
     private Transaction appdTransaction = null;
-    private Object key;
+    private String key;
     private Long lastTouchTime = null;
     private boolean finished = false;
 
@@ -15,7 +15,7 @@ public class TransactionDictionary {
         return new Date().getTime();
     }
 
-    public TransactionDictionary(Object key, Transaction appTransaction) {
+    public TransactionDictionary(String key, Transaction appTransaction) {
         this.key = key;
         this.appdTransaction = appTransaction;
         update();
@@ -28,7 +28,7 @@ public class TransactionDictionary {
         lastTouchTime = now();
     }
 
-    public Object getKey() { return this.key; }
+    public String getKey() { return this.key; }
 
     public Transaction getTransaction() {
         this.update();
