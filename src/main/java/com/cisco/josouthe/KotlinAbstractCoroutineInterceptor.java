@@ -20,7 +20,6 @@ public class KotlinAbstractCoroutineInterceptor extends MyBaseInterceptor{
     public KotlinAbstractCoroutineInterceptor() {
         super();
         scheduler = Scheduler.getInstance(10000L, 60000L, transactionsMap);
-        scheduler.start();
 
         /* @NotNull
             public final CoroutineContext getContext() {
@@ -99,7 +98,6 @@ public class KotlinAbstractCoroutineInterceptor extends MyBaseInterceptor{
     public Object onMethodBegin(Object objectIntercepted, String className, String methodName, Object[] params) {
         getLogger().info(String.format("onMethodBegin starting for %s.%s()", className, methodName));
         Transaction transaction = AppdynamicsAgent.getTransaction(); //naively grab an active BT on this thread, we expect this to be noop
-        String coroutineName = getReflectiveString(objectIntercepted, getCoroutineName, "UNKNOWN-COROUTINE");
 
         switch(methodName) {
             case "<init>": { //during init, constructor, we assume a BT is running, if not we start one, and then mark a handoff on this new object
@@ -122,6 +120,7 @@ public class KotlinAbstractCoroutineInterceptor extends MyBaseInterceptor{
                     //return null;
                 }
                 transaction = AppdynamicsAgent.startSegment(objectIntercepted); //start a Segment of the BT that marked this object for handoff earlier
+                String coroutineName = getReflectiveString(objectIntercepted, getCoroutineName, "UNKNOWN-COROUTINE");
                 collectSnapshotData(transaction, "Coroutines-Executed", coroutineName);
                 if (isFakeTransaction(transaction)) { //this object was not marked for handoff? log it
                     getLogger().info(String.format("We intercepted an implementation of an AbstractCoroutine that was not marked for handoff? %s %s %s.%s()", coroutineName, objectIntercepted, className, methodName));
@@ -133,6 +132,7 @@ public class KotlinAbstractCoroutineInterceptor extends MyBaseInterceptor{
             }
             case "onCancelled":
             case "onCompleted": { //when a coroutine is finished, it will call one of these two methods
+                String coroutineName = getReflectiveString(objectIntercepted, getCoroutineName, "UNKNOWN-COROUTINE");
                 TransactionDictionary transactionDictionary = transactionsMap.get(objectIntercepted);
                 if( transactionDictionary == null ) {
                     getLogger().info(String.format("Oops, intercepted an %s but did not have this CoroutineContext in the Transaction Dictionary, for object %s",methodName,objectIntercepted));
